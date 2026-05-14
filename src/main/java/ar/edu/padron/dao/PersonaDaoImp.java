@@ -21,7 +21,7 @@ public class PersonaDaoImp implements PersonaDAO {
 		try {
 			st = ConexionDB.getInstance().dameConnection().createStatement();
 			int result = st.executeUpdate(
-					"INSERT INTO personas (nroDocumento, apellido, nombre, fechaNacimiento, sexo, domicilio, habilitadoVotar) VALUES ("
+					"INSERT INTO personas (nro_documento, apellido, nombre, fecha_nacimiento, sexo, domicilio, habilitado_votar) VALUES ("
 							+ "'" + p.getNroDocumento() + "', " + "'" + p.getApellido() + "', " + "'" + p.getNombre()
 							+ "', " + "'" + p.getFechaNacimiento() + "', " + "'" + p.getSexo().name() + "', " + "'"
 							+ p.getDomicilio() + "', " + (p.isHabilitadoVotar() ? 1 : 0) + ")");
@@ -43,17 +43,17 @@ public class PersonaDaoImp implements PersonaDAO {
 		ResultSet rs = null;
 		try {
 			st = ConexionDB.getInstance().dameConnection().createStatement();
-			rs = st.executeQuery("SELECT * FROM personas WHERE nroDocumento = '" + dni + "'");
+			rs = st.executeQuery("SELECT * FROM personas WHERE nro_documento = '" + dni + "'");
 			if (rs.next()) {
 				p = new Persona();
 				p.setId(rs.getInt("id"));
-				p.setNroDocumento(rs.getString("nroDocumento"));
+				p.setNroDocumento(rs.getString("nro_documento")); // Cambiado a nro_documento
 				p.setApellido(rs.getString("apellido"));
 				p.setNombre(rs.getString("nombre"));
-				p.setFechaNacimiento(rs.getDate("fechaNacimiento").toLocalDate());
+				p.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate()); // Cambiado a fecha_nacimiento
 				p.setSexo(SexoEnum.valueOf(rs.getString("sexo")));
 				p.setDomicilio(rs.getString("domicilio"));
-				p.setHabilitadoVotar(rs.getBoolean("habilitadoVotar"));
+				p.setHabilitadoVotar(rs.getBoolean("habilitado_votar")); // Cambiado a habilitado_votar
 			}
 
 			return p;
@@ -70,7 +70,7 @@ public class PersonaDaoImp implements PersonaDAO {
 	public List<Persona> findAll() throws Exception {
 		Statement st = null;
 		ResultSet rs = null;
-		List<Persona> lista = new ArrayList<>(); // Creás la bolsa para las personas
+		List<Persona> lista = new ArrayList<>(); // Cre�s la bolsa para las personas
 
 		try {
 			st = ConexionDB.getInstance().dameConnection().createStatement();
@@ -79,22 +79,22 @@ public class PersonaDaoImp implements PersonaDAO {
 			while (rs.next()) { // El while recorre todas las filas de la tabla
 				Persona p = new Persona();
 				p.setId(rs.getInt("id"));
-				p.setNroDocumento(rs.getString("nroDocumento"));
+				p.setNroDocumento(rs.getString("nro_documento")); // Cambiado a nro_documento
 				p.setApellido(rs.getString("apellido"));
 				p.setNombre(rs.getString("nombre"));
 
-				// Conversión de fecha y enum (igual que en findByDocumento)
-				if (rs.getDate("fechaNacimiento") != null) {
-					p.setFechaNacimiento(rs.getDate("fechaNacimiento").toLocalDate());
+				// Conversi�n de fecha y enum (igual que en findByDocumento)
+				if (rs.getDate("fecha_nacimiento") != null) { // Cambiado a fecha_nacimiento
+					p.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate()); // Cambiado a fecha_nacimiento
 				}
 				p.setSexo(SexoEnum.valueOf(rs.getString("sexo")));
 				p.setDomicilio(rs.getString("domicilio"));
-				p.setHabilitadoVotar(rs.getBoolean("habilitadoVotar"));
+				p.setHabilitadoVotar(rs.getBoolean("habilitado_votar")); // Cambiado a habilitado_votar
 
-				lista.add(p); // Agregás la persona a la lista
+				lista.add(p); // Agreg�s la persona a la lista
 			}
 		} catch (Exception e) {
-			throw new Exception("Error al listar el padrón: " + e.getMessage());
+			throw new Exception("Error al listar el padr�n: " + e.getMessage());
 		} finally {
 			finalizarConexion(st, rs);
 		}
@@ -115,63 +115,63 @@ public class PersonaDaoImp implements PersonaDAO {
 		try {
 			st = ConexionDB.getInstance().dameConnection().createStatement();
 			int valorHabilitado = habilitado ? 1 : 0;
-			String sql = "UPDATE personas SET habilitadoVotar = " + valorHabilitado + " WHERE id = " + id;
+			String sql = "UPDATE personas SET habilitado_votar = " + valorHabilitado + " WHERE id = " + id; // Cambiado
+																											// a
+																											// habilitado_votar
 
 			int result = st.executeUpdate(sql);
 			return result > 0;
 
 		} catch (Exception e) {
 			System.out.println("Error al actualizar estado: " + e.getMessage());
-			throw new Exception("No se pudo cambiar el estado de habilitación: " + e.getMessage());
+			throw new Exception("No se pudo cambiar el estado de habilitaci�n: " + e.getMessage());
 		} finally {
 			finalizarConexion(st, rs);
 		}
 	}
 
 	@Override
-
 	public boolean saveImagen(int personaId, byte[] img, String nombre) throws Exception {
-	    PreparedStatement ps = null;
+		PreparedStatement ps = null;
 		ResultSet rs = null;
 
-	    try {
-	        // Ajustado a los nombres de tu tabla: persona_id, contenido, nombre_archivo
-	        String sql = "INSERT INTO imagenes_dni (persona_id, contenido, nombre_archivo) VALUES (?, ?, ?)";
-	        
-	        ps = ConexionDB.getInstance().dameConnection().prepareStatement(sql);
-	        
-	        ps.setInt(1, personaId);
-	        ps.setBytes(2, img);      // El byte[] va a 'contenido'
-	        ps.setString(3, nombre);  // El String va a 'nombre_archivo'
-	        
-	        int result = ps.executeUpdate();
-	        return result > 0;
+		try {
+			// Ajustado a los nombres de tu tabla: persona_id, contenido, nombre_archivo
+			String sql = "INSERT INTO imagenes_dni (persona_id, contenido, nombre_archivo) VALUES (?, ?, ?)";
 
-	    } catch (Exception e) {
-	        throw new Exception("Error al guardar en imagenes_dni: " + e.getMessage());
-	    } finally {
-	        finalizarConexion(ps, null);
-	    }
+			ps = ConexionDB.getInstance().dameConnection().prepareStatement(sql);
+
+			ps.setInt(1, personaId);
+			ps.setBytes(2, img); // El byte[] va a 'contenido'
+			ps.setString(3, nombre); // El String va a 'nombre_archivo'
+
+			int result = ps.executeUpdate();
+			return result > 0;
+
+		} catch (Exception e) {
+			throw new Exception("Error al guardar en imagenes_dni: " + e.getMessage());
+		} finally {
+			finalizarConexion(ps, null);
+		}
 	}
-
 
 	@Override
 	public byte[] getImagen(int personaId) throws Exception {
-	    PreparedStatement ps = null;
-	    ResultSet rs = null;
-	    try {
-	        ps = ConexionDB.getInstance().dameConnection().prepareStatement(
-	            "SELECT contenido FROM imagenes_dni WHERE persona_id = ?");
-	        ps.setInt(1, personaId);
-	        rs = ps.executeQuery();
-	        
-	        if (rs.next()) {
-	            return rs.getBytes("contenido"); // Recuperamos los bytes para mostrar la foto
-	        }
-	    } finally {
-	        finalizarConexion(ps, rs);
-	    }
-	    return null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		try {
+			ps = ConexionDB.getInstance().dameConnection()
+					.prepareStatement("SELECT contenido FROM imagenes_dni WHERE persona_id = ?");
+			ps.setInt(1, personaId);
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				return rs.getBytes("contenido"); // Recuperamos los bytes para mostrar la foto
+			}
+		} finally {
+			finalizarConexion(ps, rs);
+		}
+		return null;
 	}
 
 	private void finalizarConexion(Statement st, ResultSet rs) {
@@ -179,12 +179,11 @@ public class PersonaDaoImp implements PersonaDAO {
 			if (st != null) {
 				st.close();
 			}
-			if (rs != null) { // Esta validaciï¿½n evita el NullPointerException
+			if (rs != null) { // Esta validaci�n evita el NullPointerException
 				rs.close();
 			}
 		} catch (SQLException e) {
 			System.out.println("Error al cerrar recursos: " + e.getMessage());
 		}
 	}
-
 }
